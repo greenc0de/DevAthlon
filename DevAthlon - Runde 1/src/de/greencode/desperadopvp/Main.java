@@ -21,6 +21,8 @@ public class Main extends JavaPlugin{
 	
 	public static ArrayList<FallingBlock> fbs = new ArrayList<>();
 	
+	public static final String PREFIX = "§3[§bDesperadoPVP§3] §r";
+	
 	@Override
 	public void onEnable() {
 		
@@ -70,16 +72,16 @@ public class Main extends JavaPlugin{
 								if (all.getInventory().getHeldItemSlot() == i) {
 									if (isMouseDown(all)){
 										if (all.getItemInHand().getType() == Material.getMaterial(Event.ids[Event.ids.length-1]))
-											all.setItemInHand(getItemstack(Material.BOW, "§r§fMuskete"));
+											all.setItemInHand(getItemstack(Material.BOW, "§r§fMuskete",1));
 										else {
 											all.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 10, 4));
-											all.setItemInHand(getItemstack(Material.getMaterial(Event.ids[get(all)+1]), "§r§fMuskete"));
+											all.setItemInHand(getItemstack(Material.getMaterial(Event.ids[get(all)+1]), "§r§fMuskete",1));
 										}
 										
 									}else
-										all.setItemInHand(getItemstack(Material.getMaterial(Event.ids[0]), "§r§fMuskete"));
+										all.setItemInHand(getItemstack(Material.getMaterial(Event.ids[0]), "§r§fMuskete",1));
 								}else
-									all.getInventory().setItem(i,getItemstack(Material.getMaterial(Event.ids[0]), "§r§fMuskete"));
+									all.getInventory().setItem(i,getItemstack(Material.getMaterial(Event.ids[0]), "§r§fMuskete",1));
 								
 							}
 							
@@ -108,11 +110,12 @@ public class Main extends JavaPlugin{
 		return 0;
 	}
 	
-	public static ItemStack getItemstack(Material mat, String name) {
+	public static ItemStack getItemstack(Material mat, String name, int amount) {
 		ItemStack item = new ItemStack(mat);
 		ItemMeta meta = item.getItemMeta();
 		meta.setDisplayName(name);
 		item.setItemMeta(meta);
+		item.setAmount(amount);
 		return item;
 	}
 	

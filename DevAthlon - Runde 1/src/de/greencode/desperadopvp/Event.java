@@ -1,6 +1,7 @@
 package de.greencode.desperadopvp;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
@@ -17,16 +18,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 public class Event implements Listener {
+	
+	public static HashMap<Player, Player> lasthit = new HashMap<>();
 	
 	public static int[] ids = {2259,2258,2256,2260,2257,2265,2267};
 	public static ArrayList<Material> gun_reload = new ArrayList<>();
@@ -41,15 +48,67 @@ public class Event implements Listener {
 		Player p = e.getPlayer();
 		p.setTexturePack("http://greencodesite.tk/WesternPVP.zip");
 		
-		p.teleport(Bukkit.getWorld("World").getSpawnLocation());
-		p.getInventory().clear();
-		p.getInventory().setItem(0, Main.getItemstack(Material.BOW, "§rMuskete"));
-		p.getInventory().setItem(8, Main.getItemstack(Material.ARROW, "§rMusketenkugel"));
-		p.getInventory().setItem(7, Main.getItemstack(Material.COOKED_BEEF, "§rSteak"));
+		respawn(p);
 	}
 	
+	@EventHandler
+	public void onDeath(PlayerDeathEvent e) {
+		e.setKeepInventory(true);
+		
+		if (lasthit.containsKey(e.getEntity())) {
+			
+			Player killer = lasthit.get(e.getEntity());
+			e.getEntity().sendMessage(Main.PREFIX+"Du wurdest von "+killer.getName()+" erschossen!");
+			killer.sendMessage(Main.PREFIX+"Du hast "+e.getEntity().getName()+ " erschossen!");
+			
+		}
+		
+	}
 	
+	@EventHandler
+	public void onDamage(EntityDamageEvent e) {
+		if (e.getEntity() instanceof Player) {
+			Player p = (Player)e.getEntity();
+			
+			if (p.getLocation().distance(Bukkit.getWorld("world").getSpawnLocation()) < 10) {
+				e.setCancelled(true);
+				
+			}
+		}
+	}
+	@EventHandler
+	public void onDamageByEnt(EntityDamageByEntityEvent e) {
+		if (e.getEntity() instanceof Player) {
+			Player p = (Player)e.getEntity();
+			
+			if (!(p.getLocation().distance(Bukkit.getWorld("world").getSpawnLocation()) < 10)) {
+				
+				if (e.getDamager() instanceof Player) {
+					Player damager = (Player)e.getDamager();
+					
+					lasthit.put(p, damager);
+				}
+				
+			}
+		}
+	}
 	
+	@EventHandler
+	public void onRespawn(PlayerRespawnEvent e) {
+		respawn(e.getPlayer());
+	}
+	
+	private void respawn(Player p) {
+		p.teleport(Bukkit.getWorld("world").getSpawnLocation());
+		p.setGameMode(GameMode.ADVENTURE);
+		p.setHealth(20.0);
+		p.getInventory().clear();
+		p.getInventory().setItem(0, Main.getItemstack(Material.BOW, "§rMuskete",1));
+		p.getInventory().setItem(8, Main.getItemstack(Material.ARROW, "§rMusketenkugel",64));
+		p.getInventory().setItem(7, Main.getItemstack(Material.COOKED_BEEF, "§rSteak",64));
+		
+	}
+
 	@EventHandler
 	public void onTreibsand(ItemSpawnEvent e) {
 		if (e.getEntity().getItemStack().getType() == Material.SAND) {
